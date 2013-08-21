@@ -1,0 +1,374 @@
+<?
+/*
+===============================================================================
+ EJCM - Empresa Júnior de Consultoria em Microinformática - UFRJ
+Nome do Projeto:
+Data:
+Autor:
+===============================================================================*/
+//Definiçoões Gerais
+	$VERSAO = (string) "1.0";		    
+	$NOME 	= (string) "Projeto Padrao";
+	$strTitulo = "Padrao de Casos de Uso";
+
+	//Inicialização de Variáveis referentes ao banco de dados
+	
+		// Variável que armazena o handler da conexão com o banco de dados.
+		$conn 			= (string) "";
+		
+		// Variável que armazena o nome do banco de dados referente ao projeto.
+		$strBD			= (string) "";
+		
+		// Variável que armazena o login do usuário da conexão com o banco de dados.
+		$strUsuario 	= (string) "";
+		
+		// Variável que armazena a senha do usuário da conexão com o banco de dados.
+		$strSenha 		= (string) "";
+		
+		// Variável que armazena o camindo do servidor no banco de dados.
+		$strServidor	= (string) "";
+		
+		//Variaveis de conexão do banco
+		$strBanco		= "padraoviale";
+		$strUsuario 	= "root";
+		$strSenha 		= "123456";
+
+		$strServidor 	= "localhost";
+		//$strServidor 	= "146.164.24.21";
+		
+		// Estabelecendo conexão com o banco de dados.
+		$conn			= mysql_pconnect($strServidor,$strUsuario,$strSenha) or die ("<br /><br />N&atilde;o foi poss&iacute;vel conectar ao Banco de Dados.<br />Contacte o Administrador do Sistema.");
+	
+	// Selecionando o banco de dados a ser utilizado pelo sistema.
+	mysql_select_db($strBanco, $conn);
+	
+	//Dados do SMTP
+		$endSMTP   = "";
+		$userSMTP  = "";
+		$senhaSMTP = "";
+
+//Níveis de Acesso
+	
+
+//Listagem de Registros
+
+//Includes necessários para o sistema
+	
+	// Inclui o arquivo que contém as classes utilizadas pelo sistema.
+	require("classes.php");
+	
+	require("phpMailer/class.phpmailer.php");
+?>
+	<!-- Inclue o arquivo que corrige a transparência do PNG nos IE´s da vida -->
+	<!--[if lt IE 7.]>
+		<script defer type="text/javascript" src="../engine/pngfix.js"></script>
+	<![endif]-->
+		<script type="text/javascript" src="../engine/jquery/jquery-1.2.6.js"></script>
+		<!--<script type="text/javascript" src="/jquery.bgiframe.js"></script>
+		<script type="text/javascript" src="js/jquery.dimensions.js"></script>-->
+		<script type="text/javascript" src="../engine/jquery/jquery.multifile/jquery.multifile.js"></script>
+		<script type="text/javascript" src="../engine/jquery/jMask/jquery.maskedinput.js"></script>
+		<script type="text/javascript" src="../engine/jquery/jLiveQuery/jquery.livequery.js"></script>
+		<script type="text/javascript" src="../engine/jquery/jquery-ui-personalized-1.5.2.js"></script>
+		<script type="text/javascript" src="../engine/jquery/jDatePicker/ui.datepicker-pt-BR.js"></script>
+		<!--Dá um include no arquivo de CSS-->
+		<link href="../CSS/estilo.css" rel="stylesheet" type="text/css" />
+		<link href="../CSS/conteudo.css" rel="stylesheet" type="text/css" />
+		<link href="../CSS/topo.css" rel="stylesheet" type="text/css" />
+<?
+//Constantes
+
+	//Essa constante define quantos registros mostrará por vez
+		$intRegistrosPorPagina		= (int) 10;
+		
+	//Essa constante define a limitação da quantidade de paginas à ser mostrada embaixo da lista de cursistas.
+		$INTRANGE = (int) 5;
+
+	
+//Funções necessárias em qualquer projeto
+
+	//Funçao que redireciona o usuário para outra página
+ 	function redirectTo($destino)
+	{
+		?>
+		<script type="text/javascript">
+		<!--
+			document.location = "<?=$destino?>";
+		//-->
+		</script>
+		<p>Java Script desabilitado! Clique <a href="<?=$destino?>">aqui</a> para continuar.</p>
+		<?
+		exit;
+	}
+	
+	//Função que Verifica se o Usuário está logado
+	function estaLogado($strBanco)
+	{
+		if(!isset($_SESSION["$strBanco"]))
+		{
+			$_SESSION['msg'] = "Usu&aacute;rio n&atilde;o logado.";
+			$_SESSION["tipo"] = "erro";
+			redirectTo("../login.php");
+		}
+	}
+	
+	//Retorna o total de registros do banco
+	function totalRegistros($strTblName)
+	{
+		$intTotalRegistros			= 0;	
+		$strSQL						= "SELECT COUNT(*) FROM ".$strTblName.";";
+		$resultSet					= mysql_query($strSQL);
+		$intTotalRegistros			= mysql_result($resultSet,0);
+		return $intTotalRegistros;
+	}
+	
+	// Função que verifica a session e se tiver imprime
+	function imprimeSESSION()
+	{
+		//testa se tem alguma mensagem, se tiver, printa
+		if(isset($_SESSION['msg']) && isset($_SESSION['tipo']))
+		{
+			$classe = "";
+			switch($_SESSION['tipo'])
+			{
+				case "info":
+					$classe = "info";
+					break;
+				case "sucesso":
+					$classe = "sucesso";
+					break;
+				case "erro":
+					$classe = "erro";
+					break;
+			}
+				
+			?>
+				<div id="<?=$classe?>">
+					<p>
+					<?
+					switch($_SESSION['tipo'])
+					{
+						case "info":
+							echo "<strong>Informa&ccedil;&atilde;o:</strong><br />" . $_SESSION['msg'];
+							break;
+						case "sucesso":
+							echo "<strong>Sucesso:</strong><br />" . $_SESSION['msg'];
+							break;
+						case "erro":
+							echo "<strong>Erro:</strong><br />" . $_SESSION['msg'];
+							break;
+					}
+					?>
+					</p>
+				</div>
+			<?
+
+			unset($_SESSION['msg']);
+			unset($_SESSION['tipo']);
+		}
+	}
+	
+	//exclui algum dado do banco  
+	function excluir($strBanco,$strTabela,$colunaTabela,$valorComparavel,$strErro,$strSucesso)
+	{
+		if($valorComparavel)
+		{
+			$strSQL = "SELECT COUNT(*) FROM $strBanco.$strTabela WHERE $colunaTabela=".$valorComparavel.";";
+			$resulSet = mysql_query($strSQL);
+			$result = mysql_result($resulSet,0);
+			if(is_numeric($valorComparavel) && $result == 1)
+			{
+				$strSQL = "SELECT * FROM $strBanco.$strTabela WHERE $colunaTabela=".$valorComparavel.";";
+				$resultSet = mysql_query($strSQL);
+				if($resultRow = mysql_fetch_array($resultSet))
+				{
+					$strSQL = "DELETE FROM $banco.$strTabela WHERE $colunaTabela=".$valorComparavel.";";
+					if(mysql_query($strSQL))
+					{
+						$_SESSION['tipo'] = "sucesso";
+						$_SESSION['msg'] = $strSucesso;
+					}
+				}
+			}
+			else
+			{
+				$_SESSION['tipo'] = "erro";
+				$_SESSION['msg'] = $strErro;
+			}
+		}
+		else
+		{
+			$_SESSION['tipo'] = "erro";
+			$_SESSION['msg'] = $strErro;
+		}
+		
+	}
+	
+	//Função que faz o logout
+	function logOut($strBanco)
+	{
+		if(isset($_SESSION["$strBanco"]))unset($_SESSION["$strBanco"]);
+		?><script type="text/javascript">
+		<!--
+			window.location = "../index.php";
+		//-->
+		</script><?
+		exit;
+	}
+	
+	//Função que faz a validação para CADA campo, ou seja, use uma função dessa para cada campo que precise de validação
+	function validacao($post,$erro,$strErro,$campo){
+		$_SESSION["$campo"] = 0;
+		if(isset($post) && $post != $erro) 
+		{
+			return $post;
+		}
+		else
+		{
+			$_SESSION['tipo'] = "erro";
+			$_SESSION['msg'] = $strErro;
+			$_SESSION["$campo"] = 1;
+		}
+	}
+	
+	//Faz a validação do envio de e-mail
+	function validacaoEmail($mail,$strErro,$strSucesso){
+		if($mail->Send()) 
+		{
+			$_SESSION['tipo'] = "sucesso";
+			$_SESSION['msg'] = $strSucesso;
+		}
+		else
+		{
+			$_SESSION['tipo'] = "erro";
+			$_SESSION['msg'] = $strErro;
+		}
+	}
+	
+	//Verifica se as senhas são iguais, para alterar a senha
+	function validacaoSenhas($post1,$post2,$strErro){
+		if(isset($post1) && isset($post2)&& $post1 == $post2) 
+		{
+			return $post;
+		}
+		else
+		{
+			$_SESSION['tipo'] = "erro";
+			$_SESSION['msg'] = $strErro;
+		}
+	}
+	
+	//Função que faz a validação de campos que precisam de uma mascara, para quando não houver javascript permitido. Cada função valida UM campo.
+	function validacaoEreg($post,$strErro,$strEr)
+	{
+		if(isset($post))
+		{
+			if(ereg($strEr,$post))
+			{
+				return $post;
+			}
+			else
+			{
+				$_SESSION['tipo'] = "erro";
+				$_SESSION['msg'] = $strErro;
+			}
+		}
+		else
+		{
+			$_SESSION['tipo'] = "erro";
+			$_SESSION['msg'] = $strErro;
+		}
+	}
+	
+	//Função que faz a validação de campos multiplos. Cada função valida UM campo multiplo.
+	function validacaoCampoMultiplo($arrPosts,$tipoPost,$erro,$strErro){
+		$i = 0;
+		$arrValor = array();
+		
+		foreach($arrPosts as $tipoPost => $valor)
+		{
+			if($valor == $erro)
+			{
+				$_SESSION['tipo'] = "erro";
+				$_SESSION['msg'] = $strErro;
+				break;
+			}
+			else
+			{
+				$arrValor[$i] = $valor;
+			}
+			$i++;
+		}
+		return $arrValor;
+	}
+	
+	//Função que pega o que vem escrito junto com o nome da página. Serve para pegar um de cada vez.
+	function get($id,$idGet,$strNomeColuna,$strNomeBanco,$strNomeTabela)
+	{
+		if(isset($idGet)) 
+		{
+			$intId = $idGet;
+			$strSQL = "SELECT $strNomeColuna FROM $strNomeBanco.$strNomeTabela WHERE $id = $intId";
+			$resultSet = mysql_query($strSQL);
+			while($resultRow = mysql_fetch_array($resultSet))
+			{
+				$strValorCampo = $resultRow["$strNomeColuna"];
+			}
+		}
+		return $strValorCampo;
+	}
+	
+	//Função que pega o nome da pagina que esta sendo utilizada
+	function pegaPagina()
+	{
+		if(isset($_SERVER["REQUEST_URI"]))
+		{
+			$paginaAtual = basename($_SERVER["REQUEST_URI"]);
+			if(strpos($paginaAtual,"?") != false) 
+			{
+				$paginaAtual = reset(explode("?",$paginaAtual));
+			}
+			$_SESSION['url'] = $paginaAtual;
+		}
+	}
+	
+	function envioDeEmail($strEmailFrom,$strNomeFrom,$strEmailTo,$strNomeTo,$strAssunto,$strMensagem,$strErro)
+	{
+		//Variavel do envio de e-mail
+		$mail = new PHPMailer();
+		
+		$mail->IsSMTP();
+		$mail->Host = $endSMTP;
+		$mail->SMTPAuth = true;
+		$mail->Username = $userSMTP;
+		$mail->Password = $senhaSMTP;
+		
+		$mail->From = $strEmailFrom;
+		$mail->FromName = $strNomeFrom;
+		
+		$mail->AddAddress($strEmailTo,$strNomeTo);
+		$mail->AddReplyTo($strEmailFrom,$strNomeFrom);
+		
+		$mail->Subject = $strAssunto;
+		$mail->Body = $strMensagem;
+		
+		validacaoEmail($mail,$strErro,$strSucesso);
+	}
+	
+	function fazQuery($sql){
+      $result = mysql_query($sql,$this->conn);
+      return $result;
+   }
+
+   function pegaResultado($result){
+      $resultado = mysql_result($result,0);
+      return $resultado;
+   }
+
+  	function erro ($result){
+      if (!$result) {
+         die('Could not query:' . mysql_error());
+      }
+   }
+?>
+

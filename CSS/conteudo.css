@@ -1,0 +1,59 @@
+div#conteudo table#tbGerenciar{
+	background-color:white;
+	width:500px;
+	margin:auto;
+}
+
+.even {
+	background-color: #e8d132;
+}
+
+div#conteudo div.linkGerenciar{
+	width: 130px;
+	margin-left:200px;
+}
+	
+div#conteudo div.Paginacao{
+	text-align:center;
+}
+	
+div#conteudo table th,td{
+	width:100px;
+}
+
+div#conteudo div.inseAlt{
+	width:500px;
+	margin:auto;
+}
+
+div#conteudo div#login{
+	width:200px;
+	margin:auto;
+	margin-top:80px;
+}
+
+div#conteudo div#contatosForm{
+	width:780px;
+	margin:auto;
+	margin-top:80px;
+}
+
+div#conteudo a.alterarGerenciar{
+	display:block;
+	height:20px;
+	width:20px;
+	background-repeat:no-repeat;
+	background-image: url(../imagens/alterar.png);
+}
+
+div#conteudo a.excluirGerenciar{
+	display:block;
+	height:20px;
+	width:20px;
+	background-repeat:no-repeat;
+	background-image: url(../imagens/excluir.png);
+}
+
+div#conteudo span.fig{
+	display:none;
+}

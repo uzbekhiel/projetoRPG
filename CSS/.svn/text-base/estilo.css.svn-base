@@ -1,0 +1,18 @@
+#select1, #select2{
+	display:block;
+	width:100px;
+	height:100px;
+}
+
+#dragDrop1{
+	float:left;
+	margin-right:20px;
+}
+
+img{
+	border:none;
+}
+
+a:link {text-decoration: none}
+a:visited {text-decoration: none}
+a:hover {text-decoration: underline; color: #FF0000;}

@@ -1,0 +1,32 @@
+div#topo h2.titulo{
+	text-align:center;
+	/*border:1px solid red;*/ 	
+}
+
+div#topo{
+	border:1px solid red;
+	width: 1000px;
+	margin-left: 170px;
+	position:relative;
+}
+
+div#topo div#imagem{
+	/*border:1px solid red;*/
+	width: 279px;
+	height: 137px;
+	background-repeat:no-repeat;
+	background-image: url(./imagens/dados.jpg);
+	margin:auto;
+}
+
+div#menu{
+	position:absolute;
+	/*border:1px solid red;*/
+	width: 250px;
+	margin-top:35px;
+	float:left;
+}
+
+div#site{
+	border:1px solid red;
+}
